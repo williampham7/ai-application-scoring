@@ -6,9 +6,11 @@ import ast
 llm_model = "mistral:7b"
 
 # Load the spreadsheet
-df = pd.read_csv("sp_25_apps.csv")
+df = pd.read_csv("sp_25_apps.csv", encoding="utf-8-sig")
 df['Total Score 0'] = 0.0
 df['Total Score 1'] = 0.0
+
+list1 = []
 
 def llm_q1_score(response):
     prompt = f"""
@@ -52,22 +54,27 @@ def llm_q2_score(response):
 
     return result["message"]["content"]
 
-for i in tqdm.tqdm(range(df.shape[0])):
-    for j in range(2):
-        response_1 = df.iloc[i, 8]
-        response_2 = df.iloc[i, 9]
+# for i in tqdm.tqdm(range(df.shape[0])):
+i=df.shape[0]-1
+for j in range(9):
+    response_1 = df.iloc[i, 8]
+    response_2 = df.iloc[i, 9]
 
-        q1_score = llm_q1_score(response_1)
-        q1_dict = ast.literal_eval(q1_score)
-        q1_composite = sum(q1_dict.values())
+    q1_score = llm_q1_score(response_1)
+    q1_dict = ast.literal_eval(q1_score)
+    q1_composite = sum(q1_dict.values())
 
-        q2_score = llm_q1_score(response_2)
-        q2_dict = ast.literal_eval(q2_score)
-        q2_composite = sum(q2_dict.values())
+    q2_score = llm_q1_score(response_2)
+    q2_dict = ast.literal_eval(q2_score)
+    q2_composite = sum(q2_dict.values())
 
-        df.loc[i, f"Total Score {j}"] = q1_composite + q2_composite
+    list1 += [q1_composite+q2_composite]
+
+    # df.loc[i, f"Total Score {j}"] = q1_composite + q2_composite
 
 # Save results
-df.to_csv("sp_25_scored_applicants.csv", index=False)
+#df.to_csv("sp_25_scored_applicants.csv", index=False)
+
+print(list1)
 
 print("Scoring complete! Results saved to scored_applicants.csv")
